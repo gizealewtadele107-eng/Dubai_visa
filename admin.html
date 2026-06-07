@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Visa Management</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
+        .dashboard-container { max-width: 1100px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        h2 { color: #002366; border-bottom: 2px solid #002366; padding-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; font-size: 14px; }
+        th { background-color: #002366; color: white; }
+        .btn { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-view { background-color: #17a2b8; color: white; }
+        .btn-approve { background-color: #28a745; color: white; }
+        .status-badge { padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; }
+        .status-process { background-color: #ffc107; color: black; }
+        .status-approved { background-color: #28a745; color: white; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); overflow-y: auto; }
+        .modal-content { background: white; margin: 5% auto; padding: 20px; width: 80%; max-width: 750px; border-radius: 5px; position: relative; }
+        .close-btn { position: absolute; right: 20px; top: 15px; font-size: 24px; cursor: pointer; }
+        .visa-template { padding: 30px; border: 1px solid #ccc; background: white; font-family: 'Segoe UI', sans-serif; position: relative; }
+        .visa-header { display: flex; justify-content: space-between; border-bottom: 2px solid #002366; padding-bottom: 10px; font-size: 11px; font-weight: bold; }
+        .visa-title { text-align: center; background: #0c343d; color: white; padding: 8px; font-weight: bold; margin: 20px 0; letter-spacing: 1px; }
+        .visa-grid { display: grid; grid-template-columns: 150px 1fr; gap: 10px; font-size: 14px; margin-bottom: 20px; }
+        .visa-label { font-weight: bold; color: #333; }
+        .visa-value { border-bottom: 1px dashed #999; padding-bottom: 2px; }
+        .visa-footer { margin-top: 40px; display: flex; justify-content: space-between; align-items: center; }
+        .signature-line { font-family: 'Brush Script MT', cursive, sans-serif; font-size: 24px; color: #002366; border-bottom: 1px solid #333; width: 150px; text-align: center; }
+    </style>
+</head>
+<body>
+
+<div class="dashboard-container">
+    <h2><i class="fas fa-user-shield"></i> UAE Visa Admin Panel</h2>
+    <table id="applicationsTable">
+        <thead>
+            <tr>
+                <th>Full Name</th>
+                <th>Passport No</th>
+                <th>Company</th>
+                <th>Security PIN</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<div id="visaModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal()">&times;</span>
+        <h3>የቪዛ ማረጋገጫ ማመንጫ (Visa Verification Hub)</h3>
+        <div style="background: #f8f9fa; padding: 15px; margin-bottom: 15px; border-radius: 4px; display: flex; gap: 15px;">
+            <div>
+                <label>የቪዛ ቁጥር (Visa Number):</label><br>
+                <input type="text" id="inputVisaNo" placeholder="e.g. UAE-24680246" style="padding: 6px; width: 180px;">
+            </div>
+            <div>
+                <label>የፋይል ቁጥር (File Number):</label><br>
+                <input type="text" id="inputFileNo" placeholder="e.g. 2026/1234567" style="padding: 6px; width: 180px;">
+            </div>
+            <div style="display: flex; align-items: flex-end;">
+                <button class="btn btn-approve" onclick="approveApplication()">ቪዛውን አፅድቅ</button>
+            </div>
+        </div>
+
+        <div class="visa-template" id="printableVisa">
+            <div class="visa-header">
+                <div>UNITED ARAB EMIRATES<br>MINISTRY OF INTERIOR<br>General Directorate of Residency and Foreigners Affairs</div>
+                <div><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/eb/Emblem_of_the_United_Arab_Emirates.svg/1200px-Emblem_of_the_United_Arab_Emirates.svg.png" style="height: 50px;"></div>
+                <div style="text-align: right; direction: rtl;">الإمارات العربية المتحدة<br>وزارة الداخلية<br>الإدارة العامة للإقامة وشؤون الأجانب</div>
+            </div>
+            <div class="visa-title">VISA APPROVAL / ENTRY PERMIT</div>
+            <div style="position: absolute; right: 40px; top: 160px; text-align: center;">
+                <div style="font-weight: bold; color: #d6001c; border: 2px solid #d6001c; padding: 5px 10px; font-size: 20px; border-radius: 4px;">DUBAI<br><span style="font-size: 11px; color:#333;">Visit Dubai</span></div>
+            </div>
+            <div class="visa-grid">
+                <div class="visa-label">Visa Number</div><div class="visa-value" id="vNo">-</div>
+                <div class="visa-label">File Number</div><div class="visa-value" id="vFile">-</div>
+                <div class="visa-label">Name</div><div class="visa-value" id="vName">-</div>
+                <div class="visa-label">Passport Number</div><div class="visa-value" id="vPass">-</div>
+                <div class="visa-label">Nationality</div><div class="visa-value">Ethiopian</div>
+                <div class="visa-label">Visa Type</div><div class="visa-value">Employment Visa (Work Permit)</div>
+                <div class="visa-label">Validity</div><div class="visa-value">30 Days from the date of entry</div>
+                <div class="visa-label">Issue Date</div><div class="visa-value" id="vIssue">-</div>
+                <div class="visa-label">Expiry Date</div><div class="visa-value" id="vExpiry">-</div>
+            </div>
+            <div class="visa-footer">
+                <div>
+                    <span>Sincerely,</span><br><br>
+                    <div class="signature-line">Gizealew T.</div>
+                </div>
+                <div>
+                    <div style="width: 100px; height: 100px; border: 3px double #002366; border-radius: 50%; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #002366; font-size: 8px; font-weight: bold; text-align: center;">
+                        <span>* MINISTRY *</span><span>OF INTERIOR</span><span>PASSED</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <br>
+        <button class="btn btn-view" onclick="window.print()">Print / Save as PDF</button>
+    </div>
+</div>
+
+<script>
+    const SUPABASE_URL = "https://gizealewtadele107-eng.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_P4F2VeRZUpODu0iemenxaQ_Vv3OizSV";
+
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let selectedId = null;
+
+    window.onload = loadApplications;
+
+    async function loadApplications() {
+        let { data: apps, error } = await _supabase
+            .from('visa_applications')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) { alert("Error: " + error.message); return; }
+
+        const tbody = document.querySelector('#applicationsTable tbody');
+        tbody.innerHTML = '';
+
+        apps.forEach(app => {
+            const tr = document.createElement('tr');
+            const badgeClass = app.status === 'Approved' ? 'status-approved' : 'status-process';
+            tr.innerHTML = `
+                <td><b>${app.full_name}</b></td>
+                <td>${app.passport_number}</td>
+                <td>${app.company_name}</td>
+                <td style="color:#d6001c; font-weight:bold;">${app.pin}</td>
+                <td><span class="status-badge ${badgeClass}">${app.status}</span></td>
+                <td><button class="btn btn-view" onclick='openVisaModal(${JSON.stringify(app)})'>Manage</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function openVisaModal(app) {
+        selectedId = app.id;
+        document.getElementById('vName').innerText = app.full_name;
+        document.getElementById('vPass').innerText = app.passport_number;
+        document.getElementById('vNo').innerText = app.visa_number || '-';
+        document.getElementById('vFile').innerText = app.file_number || '-';
+        
+        const today = new Date();
+        const expiry = new Date();
+        expiry.setDate(today.getDate() + 30);
+        document.getElementById('vIssue').innerText = today.toLocaleDateString('en-GB');
+        document.getElementById('vExpiry').innerText = expiry.toLocaleDateString('en-GB');
+
+        document.getElementById('visaModal').style.display = 'block';
+    }
+
+    function closeModal() { document.getElementById('visaModal').style.display = 'none'; }
+
+    async function approveApplication() {
+        const visaNo = document.getElementById('inputVisaNo').value;
+        const fileNo = document.getElementById('inputFileNo').value;
+
+        if(!visaNo || !fileNo) { alert("Please input fields!"); return; }
+
+        const { error } = await _supabase
+            .from('visa_applications')
+            .update({ status: 'Approved', visa_number: visaNo, file_number: fileNo })
+            .eq('id', selectedId);
+
+        if (error) { alert("Error: " + error.message); } else {
+            alert("Approved!");
+            closeModal();
+            loadApplications();
+        }
+    }
+</script>
+</body>
+</html>
