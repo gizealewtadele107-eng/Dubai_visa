@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check Visa Status / የቪዛ ሁኔታ ማረጋገጫ</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #eef2f5; padding: 20px; text-align: center; }
+        .box { max-width: 450px; margin: 50px auto; background: white; padding: 30px; border-radius: 6px; box-shadow: 0 0 10px rgba(0,0,0,0.1); border-top: 4px solid #002366; }
+        input { width: 80%; padding: 10px; margin: 15px 0; border: 1px solid #ccc; text-align: center; font-size: 18px; letter-spacing: 5px; }
+        button { background: #002366; color: white; border: none; padding: 10px 20px; font-size: 16px; cursor: pointer; font-weight: bold; width: 85%; }
+        .result-card { display: none; margin-top: 20px; padding: 15px; border-radius: 4px; text-align: left; background: #f8f9fa; border: 1px solid #ddd; }
+        .status-btn { display: inline-block; padding: 5px 10px; border-radius: 12px; font-weight: bold; font-size: 13px; }
+        .InProcess { background: #ffc107; color: black; }
+        .Approved { background: #28a745; color: white; }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <i class="fas fa-passport" style="font-size: 40px; color: #002366; margin-bottom: 10px;"></i>
+    <h2>Check Visa Status</h2>
+    <p>የቪዛዎን ሁኔታ ለመከታተል ሲመዘገቡ የፈጠሩትን ባለ 4 አሃዝ የይለፍ ቃል (PIN) ያስገቡ።</p>
+    
+    <input type="password" id="userPin" maxlength="4" placeholder="••••">
+    <button onclick="checkStatus()">ማመልከቻዬን ፈልግ</button>
+
+    <div class="result-card" id="resultCard">
+        <h4 style="margin: 0 0 10px 0; color: #002366;" id="resName">Name: -</h4>
+        <p><b>Passport Number:</b> <span id="resPass">-</span></p>
+        <p><b>Application Status:</b> <span id="resStatus" class="status-btn">In Process</span></p>
+        <div id="downloadArea" style="display: none; margin-top: 15px; border-top: 1px solid #ccc; padding-top: 15px; text-align: center;">
+            <p style="color: #28a745; font-weight: bold;"><i class="fas fa-check-circle"></i> እንኳን ደስ አለዎት! ቪዛዎ ፅድቋል።</p>
+            <p>የቪዛ ቁጥርዎ፡ <span id="resVisaNo" style="font-weight: bold; color: #002366;">-</span></p>
+            <p>የፋይል ቁጥርዎ፡ <span id="resFileNo" style="font-weight: bold; color: #002366;">-</span></p>
+            <small style="color: #666;">የቪዛውን ፎርም ከአስተዳዳሪው ዘንድ ማግኘት ይችላሉ።</small>
+        </div>
+    </div>
+</div>
+
+<script>
+    const SUPABASE_URL = "https://gizealewtadele107-eng.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_P4F2VeRZUpODu0iemenxaQ_Vv3OizSV";
+
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    async function checkStatus() {
+        const pinCode = document.getElementById('userPin').value;
+        if(!pinCode) { alert("እባክህ PIN ቁጥር አስገባ!"); return; }
+
+        let { data: apps, error } = await _supabase
+            .from('visa_applications')
+            .select('*')
+            .eq('pin', pinCode);
+
+        if (error) { alert("Error: " + error.message); return; }
+
+        const card = document.getElementById('resultCard');
+        if(apps.length === 0) {
+            alert("ይህንን ሚስጥራዊ ቁጥር (PIN) የያዘ ማመልከቻ አልተገኘም!");
+            card.style.display = 'none';
+            return;
+        }
+
+        const userApp = apps[0];
+        card.style.display = 'block';
+        document.getElementById('resName').innerText = "Name: " + userApp.full_name;
+        document.getElementById('resPass').innerText = userApp.passport_number;
+        
+        const statusEl = document.getElementById('resStatus');
+        statusEl.innerText = userApp.status;
+        statusEl.className = "status-btn " + userApp.status.replace(" ", "");
+
+        if(userApp.status === 'Approved') {
+            document.getElementById('downloadArea').style.display = 'block';
+            document.getElementById('resVisaNo').innerText = userApp.visa_number || '-';
+            document.getElementById('resFileNo').innerText = userApp.file_number || '-';
+        } else {
+            document.getElementById('downloadArea').style.display = 'none';
+        }
+    }
+</script>
+</body>
+</html>
