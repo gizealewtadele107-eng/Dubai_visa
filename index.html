@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UAE Visa System - Work Permit & Entry Visa</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #eef2f5; margin: 0; padding: 10px; }
+        .container { max-width: 800px; background: #ffffff; margin: 10px auto; padding: 25px; border-radius: 4px; box-shadow: 0 0 10px rgba(0,0,0,0.1); border: 1px solid #ccc; }
+        .header-table { width: 100%; margin-bottom: 20px; border-bottom: 2px solid #002366; padding-bottom: 10px; }
+        .header-title { text-align: center; background-color: #f8f9fa; border: 1px solid #333; padding: 10px; font-size: 18px; font-weight: bold; color: #111; margin-bottom: 20px; border-radius: 4px; }
+        .lang-box { display: flex; justify-content: flex-end; margin-bottom: 15px; }
+        .lang-btn { background-color: #002366; color: white; border: none; padding: 8px 15px; font-weight: bold; cursor: pointer; border-radius: 3px; font-size: 13px; }
+        .section-title { background-color: #002366; color: white; padding: 8px 12px; font-size: 14px; font-weight: bold; text-transform: uppercase; margin-top: 20px; margin-bottom: 15px; letter-spacing: 0.5px; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
+        .form-group { margin-bottom: 12px; }
+        .form-group.full-width { grid-column: span 2; }
+        @media (max-width: 600px) { .form-group.full-width { grid-column: span 1; } }
+        label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 5px; color: #333; }
+        label i { margin-right: 5px; color: #002366; }
+        input[type="text"], input[type="email"], input[type="tel"], input[type="date"], input[type="password"], select { width: 100%; padding: 8px; border: 1px solid #aaa; border-radius: 3px; box-sizing: border-box; font-size: 14px; background-color: #fff; }
+        .radio-group { display: flex; gap: 20px; padding-top: 5px; }
+        .radio-label { display: flex; align-items: center; gap: 5px; font-weight: normal; cursor: pointer; }
+        .photo-upload-zone { border: 2px dashed #002366; padding: 20px; text-align: center; background-color: #f8f9fa; cursor: pointer; border-radius: 4px; }
+        .photo-upload-zone i { font-size: 30px; color: #002366; margin-bottom: 8px; }
+        .declaration-text { border: 1px solid #ccc; padding: 15px; background-color: #fdfdfd; font-size: 13px; line-height: 1.6; color: #444; margin-bottom: 20px; }
+        button.submit-btn { width: 100%; background-color: #002366; color: white; padding: 12px; border: none; font-size: 16px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        button.submit-btn:hover { background-color: #001845; }
+        #successScreen { display: none; text-align: center; padding: 40px 20px; }
+        #successScreen i { font-size: 60px; color: #28a745; margin-bottom: 20px; }
+        #successScreen h2 { color: #002366; margin-bottom: 10px; }
+        #successScreen p { color: #555; font-size: 16px; line-height: 1.5; }
+    </style>
+</head>
+<body>
+
+<div class="container" id="formContainer">
+    <div class="lang-box">
+        <button type="button" class="lang-btn" id="langBtn" onclick="toggleLanguage()">Language: Amharic</button>
+    </div>
+
+    <table class="header-table">
+        <tr>
+            <td style="font-size: 11px; font-weight: bold; color: #333;">
+                UNITED ARAB EMIRATES<br> Ministry of Human Resources & Emiratisation
+            </td>
+            <td style="text-align: right; font-size: 11px; font-weight: bold; color: #333; direction: rtl;">
+                الإمارات العربية المتحدة<br> وزارة الموارد البشرية والتوطين
+            </td>
+        </tr>
+    </table>
+
+    <div class="header-title" id="mainTitle">UAE WORK PERMIT / EMPLOYMENT VISA APPLICATION FORM</div>
+
+    <form id="visaForm" onsubmit="handleSubmit(event)">
+        <div class="section-title" id="secSecurity">SECURITY PIN / የደህንነት ኮድ</div>
+        <div class="form-grid">
+            <div class="form-group">
+                <label id="lblPin"><i class="fas fa-lock"></i> Create 4-Digit Password (PIN) *</label>
+                <input type="password" id="txtPin" pattern="[0-9]{4}" maxlength="4" placeholder="e.g. 1234" required>
+            </div>
+            <div class="form-group">
+                <label id="lblVerifyStatus"><i class="fas fa-info-circle"></i> Profile Access Status</label>
+                <input type="text" value="New Application / አዲስ ማመልከቻ" readonly style="background-color: #eee; font-weight: bold; color: #002366;">
+            </div>
+        </div>
+
+        <div class="section-title" id="secA"><i class="fas fa-building"></i> A. EMPLOYER / COMPANY DETAILS</div>
+        <div class="form-grid">
+            <div class="form-group full-width">
+                <label id="lblCompName">Company Name *</label>
+                <input type="text" id="txtCompName" required>
+            </div>
+            <div class="form-group">
+                <label id="lblTradeLic">Trade License No. *</label>
+                <input type="text" id="txtTradeLic" required>
+            </div>
+            <div class="form-group">
+                <label id="lblCompContact">Contact Number *</label>
+                <input type="tel" id="txtCompContact" required>
+            </div>
+            <div class="form-group full-width">
+                <label id="lblCompAddr">Company Address *</label>
+                <input type="text" id="txtCompAddr" required>
+            </div>
+            <div class="form-group full-width">
+                <label id="lblSponsor">Sponsor / Authorized Person *</label>
+                <input type="text" id="txtSponsor" required>
+            </div>
+        </div>
+
+        <div class="section-title" id="secB"><i class="fas fa-user"></i> B. APPLICANT DETAILS</div>
+        <div class="form-grid">
+            <div class="form-group full-width">
+                <label id="lblFullName">Full Name (as in Passport) *</label>
+                <input type="text" id="txtFullName" required>
+            </div>
+            <div class="form-group">
+                <label id="lblNationality">Nationality *</label>
+                <input type="text" id="txtNationality" value="Ethiopian" required>
+            </div>
+            <div class="form-group">
+                <label id="lblDOB">Date of Birth *</label>
+                <input type="date" id="txtDOB" required>
+            </div>
+            <div class="form-group">
+                <label id="lblGender">Gender *</label>
+                <div class="radio-group">
+                    <label class="radio-label"><input type="radio" name="Gender" value="Male" checked><span id="optMale">Male</span></label>
+                    <label class="radio-label"><input type="radio" name="Gender" value="Female"><span id="optFemale">Female</span></label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label id="lblMarital">Marital Status *</label>
+                <div class="radio-group">
+                    <label class="radio-label"><input type="radio" name="Marital" value="Single" checked><span id="optSingle">Single</span></label>
+                    <label class="radio-label"><input type="radio" name="Marital" value="Married"><span id="optMarried">Married</span></label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label id="lblPassNo">Passport Number *</label>
+                <input type="text" id="txtPassNo" required>
+            </div>
+            <div class="form-group">
+                <label id="lblPassIssue">Passport Issue Date *</label>
+                <input type="date" id="txtPassIssue" required>
+            </div>
+            <div class="form-group">
+                <label id="lblPassExpiry">Passport Expiry Date *</label>
+                <input type="date" id="txtPassExpiry" required>
+            </div>
+            <div class="form-group">
+                <label id="lblEmail">Email Address *</label>
+                <input type="email" id="txtEmail" required>
+            </div>
+            <div class="form-group">
+                <label id="lblMobile">Mobile Number *</label>
+                <input type="tel" id="txtMobile" required>
+            </div>
+            <div class="form-group full-width">
+                <label id="lblAddress">Current Address (Home Country) *</label>
+                <input type="text" id="txtAddress" required>
+            </div>
+        </div>
+
+        <div class="section-title" id="secMedia"><i class="fas fa-camera"></i> REQUIRED DOCUMENTS</div>
+        <div class="form-grid">
+            <div class="form-group full-width">
+                <label id="lblIdPhoto">Passport Size Photo (ID) *</label>
+                <div class="photo-upload-zone">
+                    <i class="fas fa-id-badge"></i><br>
+                    <input type="file" id="filePassport" accept="image/*" required>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-title" id="secC"><i class="fas fa-briefcase"></i> C. EMPLOYMENT DETAILS</div>
+        <div class="form-grid">
+            <div class="form-group">
+                <label id="lblJobTitle">Job Title *</label>
+                <input type="text" id="txtJobTitle" required>
+            </div>
+            <div class="form-group">
+                <label id="lblDept">Department</label>
+                <input type="text" id="txtDept">
+            </div>
+            <div class="form-group">
+                <label id="lblSalary">Monthly Salary (AED) *</label>
+                <input type="text" id="txtSalary" required>
+            </div>
+            <div class="form-group">
+                <label id="lblEmpType">Employment Type *</label>
+                <div class="radio-group">
+                    <label class="radio-label"><input type="radio" name="EmpType" value="Full Time" checked><span id="optFT">Full Time</span></label>
+                    <label class="radio-label"><input type="radio" name="EmpType" value="Part Time"><span id="optPT">Part Time</span></label>
+                    <label class="radio-label"><input type="radio" name="EmpType" value="Contract"><span id="optCT">Contract</span></label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label id="lblPermitNo">Work Permit Number (If available)</label>
+                <input type="text" id="txtPermitNo">
+            </div>
+            <div class="form-group">
+                <label id="lblVisaType">Visa Type</label>
+                <input type="text" value="Employment Visa (Work Permit)" readonly style="background-color: #eee;">
+            </div>
+            <div class="form-group">
+                <label id="lblEntryDate">Proposed Date of Entry to UAE *</label>
+                <input type="date" id="txtEntryDate" required>
+            </div>
+            <div class="form-group">
+                <label id="lblEmirate">Place of Work (Emirate) *</label>
+                <select id="selEmirate" required>
+                    <option value="">-- Select Emirate --</option>
+                    <option value="Abu Dhabi">Abu Dhabi</option>
+                    <option value="Dubai">Dubai</option>
+                    <option value="Sharjah">Sharjah</option>
+                    <option value="Ajman">Ajman</option>
+                    <option value="Umm Al Quwain">Umm Al Quwain</option>
+                    <option value="Ras Al Khaimah">Ras Al Khaimah</option>
+                    <option value="Fujairah">Fujairah</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="section-title" id="secD"><i class="fas fa-file-contract"></i> D. DECLARATION</div>
+        <div class="declaration-text" id="decText">
+            I hereby declare that the information provided above is true and correct to the best of my knowledge. I will comply with the laws and regulations of the United Arab Emirates.
+        </div>
+
+        <button type="submit" class="submit-btn" id="btnSubmit">Submit Application</button>
+    </form>
+</div>
+
+<div class="container" id="successScreen">
+    <i class="fas fa-spinner fa-spin"></i>
+    <h2 id="msgHeading">Submission Successful!</h2>
+    <p id="msgText">Your application has been received and is currently <strong>In Process</strong>.<br>The Admin will review your passport info and issue the approved visa shortly.</p>
+    <br>
+    <button class="lang-btn" onclick="window.location.reload()">Back to Form</button>
+</div>
+
+<script>
+    const SUPABASE_URL = "https://gizealewtadele107-eng.supabase.co"; 
+    const SUPABASE_ANON_KEY = "sb_publishable_P4F2VeRZUpODu0iemenxaQ_Vv3OizSV"; 
+
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let currentLang = "en"; 
+
+    async function handleSubmit(event) {
+        event.preventDefault();
+        const submitBtn = document.getElementById('btnSubmit');
+        submitBtn.innerText = "Uploading... / በመላክ ላይ...";
+        submitBtn.disabled = true;
+
+        try {
+            const photoFile = document.getElementById('filePassport').files[0];
+            let passportPhotoUrl = "";
+
+            if (photoFile) {
+                const fileExt = photoFile.name.split('.').pop();
+                const fileName = `${Date.now()}.${fileExt}`;
+                const filePath = `public/${fileName}`;
+
+                let { error: uploadError } = await _supabase.storage
+                    .from('passport-photos')
+                    .upload(filePath, photoFile);
+
+                if (uploadError) throw uploadError;
+
+                const { data: urlData } = _supabase.storage
+                    .from('passport-photos')
+                    .getPublicUrl(filePath);
+                    
+                passportPhotoUrl = urlData.publicUrl;
+            }
+
+            const { error: dbError } = await _supabase
+                .from('visa_applications')
+                .insert([{
+                    pin: document.getElementById('txtPin').value,
+                    status: 'In Process',
+                    full_name: document.getElementById('txtFullName').value,
+                    passport_number: document.getElementById('txtPassNo').value,
+                    passport_photo_url: passportPhotoUrl,
+                    company_name: document.getElementById('txtCompName').value,
+                    job_title: document.getElementById('txtJobTitle').value,
+                    monthly_salary: document.getElementById('txtSalary').value,
+                    emirate: document.getElementById('selEmirate').value
+                }]);
+
+            if (dbError) throw dbError;
+
+            document.getElementById('formContainer').style.display = 'none';
+            document.getElementById('successScreen').style.display = 'block';
+
+        } catch (error) {
+            alert("Error sending data: " + error.message);
+            submitBtn.innerText = "Submit Application";
+            submitBtn.disabled = false;
+        }
+    }
+
+    function toggleLanguage() {
+        if (currentLang === "en") {
+            document.getElementById("langBtn").innerText = "Language: English";
+            document.getElementById("mainTitle").innerText = "UAE የሥራ ፈቃድ / የቅጥር ቪዛ ማመልከቻ ቅጽ";
+            document.getElementById("secSecurity").innerText = "የደህንነት ኮድ (Security Configuration)";
+            document.getElementById("lblPin").innerText = "ባለ 4 አሃዝ ሚስጥራዊ ቁጥር ፍጠር (PIN) *";
+            document.getElementById("secA").innerText = "ሀ. የአሰሪው / የኩባንያው ዝርዝር መረጃ (Employer Details)";
+            document.getElementById("lblCompName").innerText = "የኩባንያው ስም (Company Name) *";
+            document.getElementById("lblTradeLic").innerText = "የንግድ ፈቃድ ቁጥር (Trade License No.) *";
+            document.getElementById("lblCompContact").innerText = "የኩባንያው ስልክ ቁጥር (Contact Number) *";
+            document.getElementById("lblCompAddr").innerText = "የኩባንያው አድራሻ (Company Address) *";
+            document.getElementById("lblSponsor").innerText = "ዋስትና ሰጪ / የተፈቀደለት ሰው (Sponsor Name) *";
+            document.getElementById("secB").innerText = "ለ. የማልካቹ ዝርዝር መረጃ (Applicant Details)";
+            document.getElementById("lblFullName").innerText = "ሙሉ ስም [በፓስፖርት ላይ እንዳለው] (Full Name) *";
+            document.getElementById("lblNationality").innerText = "ዜግነት (Nationality) *";
+            document.getElementById("lblDOB").innerText = "የልደት ቀን (Date of Birth) *";
+            document.getElementById("lblGender").innerText = "ጾታ (Gender) *";
+            document.getElementById("optMale").innerText = "ወንድ (Male)";
+            document.getElementById("optFemale").innerText = "ሴት (Female)";
+            document.getElementById("lblMarital").innerText = "የጋብቻ ሁኔታ (Marital Status) *";
+            document.getElementById("optSingle").innerText = "ያላገባ (Single)";
+            document.getElementById("optMarried").innerText = "ያገባ (Married)";
+            document.getElementById("lblPassNo").innerText = "የፓስፖርት ቁጥር (Passport Number) *";
+            document.getElementById("lblPassIssue").innerText = "ፓስፖርት የተሰጠበት ቀን (Issue Date) *";
+            document.getElementById("lblPassExpiry").innerText = "ፓስፖርት የሚያበቃበት ቀን (Expiry Date) *";
+            document.getElementById("lblEmail").innerText = "ኢሜይል አድራሻ (Email Address) *";
+            document.getElementById("lblMobile").innerText = "የሞባይል ስልክ ቁጥር (Mobile Number) *";
+            document.getElementById("lblAddress").innerText = "የአሁኑ አድራሻ [በትውልድ ሀገር] (Current Address) *";
+            document.getElementById("secMedia").innerText = "አስፈላጊ ፎቶዎች (Required Uploads)";
+            document.getElementById("lblIdPhoto").innerText = "የፓስፖርት መጠን ፎቶ (ID Photo) *";
+            document.getElementById("secC").innerText = "ሐ. የቅጥር ሁኔታ ዝርዝር (Employment Details)";
+            document.getElementById("lblJobTitle").innerText = "የሥራ መደብ (Job Title) *";
+            document.getElementById("lblDept").innerText = "የሥራ ክፍል (Department)";
+            document.getElementById("lblSalary").innerText = "የወር ደመወዝ [በ UAE ዲርሃም] (Monthly Salary AED) *";
+            document.getElementById("lblEmpType").innerText = "የቅጥር ዓይነት (Employment Type) *";
+            document.getElementById("optFT").innerText = "ሙሉ ቀን (Full Time)";
+            document.getElementById("optPT").innerText = "ትርፍ ሰዓት (Part Time)";
+            document.getElementById("optCT").innerText = "በውል (Contract)";
+            document.getElementById("lblPermitNo").innerText = "የሥራ ፈቃድ ቁጥር [ካለ] (Work Permit Number)";
+            document.getElementById("lblEntryDate").innerText = "ወደ UAE ለመግባት የታሰበበት ቀን (Proposed Entry Date) *";
+            document.getElementById("lblEmirate").innerText = "የሚሰሩበት ግዛት [ኤሚሬት] (Place of Work) *";
+            document.getElementById("secD").innerText = "መ. ማረጋገጫ (Declaration)";
+            document.getElementById("decText").innerText = "ከዚህ በላይ የሰጠሁት መረጃ በሙሉ ትክክለኛና እውነተኛ መሆኑን አረጋግጣለሁ። የቪዛውን ህግጋትና የዩናይትድ አረብ ኤሚሬትስን ህጎች አከብራለሁ።";
+            document.getElementById("btnSubmit").innerText = "ማመልከቻውን ላክ (Submit Application)";
+            document.getElementById("msgHeading").innerText = "ማመልከቻዎ በትክክል ተልኳል!";
+            document.getElementById("msgText").innerHTML = "ማመልከቻዎ ደርሶናል፣ በአሁኑ ጊዜ <strong>በሂደት ላይ (In Process)</strong> ይገኛል።<br>የሲስተም አስተዳዳሪው የፓስፖርት መረጃዎን አይቶ ሲያፀድቅ የተፈቀደውን ቪዛ ያመነጫል።";
+            currentLang = "am";
+        } else {
+            document.getElementById("langBtn").innerText = "ቋንቋ: አማርኛ";
+            document.getElementById("mainTitle").innerText = "UAE WORK PERMIT / EMPLOYMENT VISA APPLICATION FORM";
+            document.getElementById("secSecurity").innerText =
