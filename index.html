@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ireland Work Visa Portal</title>
+    <style>
+        :root { --primary: #004a99; --secondary: #28a745; --bg: #f0f2f5; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--bg); overflow-x: hidden; }
+        
+        /* Language & Info Bar */
+        .top-nav { background: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .btn-small { padding: 5px 15px; border-radius: 20px; border: 1px solid var(--primary); cursor: pointer; background: white; }
+
+        .container { max-width: 600px; margin: 20px auto; background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); overflow: hidden; position: relative; }
+        .page { display: none; padding: 30px; animation: fadeIn 0.5s ease; }
+        .active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Page 1 Styles */
+        .hero-img { width: 100%; border-radius: 10px; margin-bottom: 20px; }
+        
+        /* Register Page (Style from your 3rd image) */
+        .register-card { background: #3498db; color: white; padding: 30px; border-radius: 10px; text-align: center; }
+        .input-group { margin: 10px 0; text-align: left; }
+        input, select { width: 100%; padding: 12px; margin-top: 5px; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box; }
+        .btn-submit { background: #2ecc71; color: white; border: none; padding: 15px; width: 100%; border-radius: 5px; font-weight: bold; cursor: pointer; margin-top: 20px; }
+        .google-btn { background: white; color: #444; border: 1px solid #ddd; padding: 10px; width: 100%; border-radius: 5px; cursor: pointer; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; }
+
+        /* Table Style for Travel Plan */
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 12px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        
+        .status-msg { text-align: center; color: var(--secondary); font-size: 20px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="top-nav">
+        <button class="btn-small" onclick="toggleLang()" id="langBtn">አማርኛ</button>
+        <button class="btn-small" onclick="showInfo()">ℹ️ Info</button>
+    </div>
+
+    <div class="container">
+        
+        <div id="page1" class="page active">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcScU_1I5jD7W4R4v7V_Z9O6uG5-qT5l8A7-Yg&s" alt="Banner" class="hero-img">
+            <h2 id="t1">Welcome to Ireland Visa Portal</h2>
+            <p id="st1">Start your journey to build your career in Ireland.</p>
+            <button class="btn-submit" onclick="goToPage('page2')" id="btn1">Get Started</button>
+        </div>
+
+        <div id="page2" class="page">
+            <div class="register-card">
+                <h2 id="t2">REGISTER NOW</h2>
+                <button class="google-btn" onclick="googleLogin()">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="20" style="margin-right:10px"> Sign in with Google
+                </button>
+                <div class="input-group">
+                    <input type="text" id="fname" placeholder="First Name">
+                    <input type="text" id="lname" placeholder="Last Name">
+                    <input type="email" id="email" placeholder="Email Address">
+                    <input type="password" id="pass" placeholder="Password">
+                </div>
+                <button class="btn-submit" onclick="saveAndNext('page3')" id="btn2">SUBMIT</button>
+            </div>
+        </div>
+
+        <div id="page3" class="page">
+            <h3 id="t3">Step 1: Travel Plan</h3>
+            <table>
+                <tr><th>Country</th><th>Arrival</th><th>Nights</th></tr>
+                <tr>
+                    <td><input type="text" value="Ireland"></td>
+                    <td><input type="date"></td>
+                    <td><input type="number" value="30"></td>
+                </tr>
+            </table>
+            <button class="btn-submit" onclick="goToPage('page4')" id="btn3">Next Step</button>
+        </div>
+
+        <div id="page4" class="page">
+            <h3 id="t4">Step 2: Upload Documents</h3>
+            <div class="input-group">
+                <label id="l1">Real Passport Photo:</label>
+                <input type="file" id="passportImg" accept="image/*">
+            </div>
+            <div class="input-group">
+                <label id="l2">ID Card Photo:</label>
+                <input type="file" id="idImg" accept="image/*">
+            </div>
+            <button class="btn-submit" onclick="goToPage('page5')" id="btn4">Go to Payment</button>
+        </div>
+
+        <div id="page5" class="page">
+            <h3 id="t5">Step 3: Final Payment</h3>
+            <div style="background: #e8f5e9; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                <p><strong>Amount:</strong> 12,000 ETB</p>
+                <p><strong>Telebirr:</strong> 0900000000</p>
+                <p><strong>CBE Account:</strong> 100099999999</p>
+            </div>
+            <select id="payMethod">
+                <option value="tele">Telebirr</option>
+                <option value="cbe">CBE</option>
+            </select>
+            <button class="btn-submit" onclick="finalize()" id="btn5">Confirm & Submit</button>
+        </div>
+
+        <div id="finalPage" class="page">
+            <div class="status-msg">
+                <div style="font-size: 50px;">✔️</div>
+                <p id="successMsg">Your request is in process.</p>
+                <p style="color: #666; font-size: 14px;" id="dbMsg">Data saved to local database.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let currentLang = 'EN';
+
+        // ገጽ ለመቀየር
+        function goToPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+        }
+
+        // መረጃን ለመመዝገብ (LocalStorage as Database)
+        function saveAndNext(nextPage) {
+            const data = {
+                firstName: document.getElementById('fname').value,
+                lastName: document.getElementById('lname').value,
+                email: document.getElementById('email').value
+            };
+            localStorage.setItem('visaUserData', JSON.stringify(data));
+            goToPage(nextPage);
+        }
+
+        // ማጠቃለያ
+        function finalize() {
+            alert("Payment Confirmed!");
+            goToPage('finalPage');
+        }
+
+        // Google Login Simulation
+        function googleLogin() {
+            let email = prompt("Enter your Google Email:");
+            if(email) {
+                document.getElementById('email').value = email;
+                alert("Connected to Google: " + email);
+            }
+        }
+
+        // Info Button
+        function showInfo() {
+            alert(currentLang === 'EN' ? "Ireland Work Visa: High success rate, No IELTS required!" : "የአየርላንድ የስራ ቪዛ፡ ከፍተኛ ስኬት፣ የቋንቋ ፈተና አያስፈልግም!");
+        }
+
+        // Language Toggle Logic
+        function toggleLang() {
+            if(currentLang === 'EN') {
+                currentLang = 'AM';
+                document.getElementById('langBtn').innerText = "English";
+                document.getElementById('t1').innerText = "ወደ አየርላንድ ቪዛ ፖርታል እንኳን ደህና መጡ";
+                document.getElementById('btn1').innerText = "ይጀምሩ";
+                document.getElementById('t2').innerText = "አሁኑኑ ይመዝገቡ";
+                document.getElementById('btn2').innerText = "አስገባ";
+                document.getElementById('btn3').innerText = "ቀጣይ";
+                document.getElementById('l1').innerText = "እውነተኛ የፓስፖርት ፎቶ፡";
+                document.getElementById('l2').innerText = "የመታወቂያ ፎቶ፡";
+                document.getElementById('successMsg').innerText = "ጥያቄዎ በሂደት ላይ ነው።";
+            } else {
+                location.reload(); // Reset to English
+            }
+        }
+    </script>
+</body>
+</html>
