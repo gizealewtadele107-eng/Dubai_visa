@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Travel Plan Form</title>
+    <style>
+        body { font-family: sans-serif; background: #f4f4f4; padding: 20px; }
+        .container { max-width: 700px; margin: auto; background: white; padding: 20px; border: 1px solid #000; }
+        h2 { text-align: center; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #000; padding: 8px; text-align: left; }
+        .header-box { border: 1px solid #000; padding: 10px; margin-bottom: 10px; }
+        button { width: 100%; padding: 10px; background: #004a99; color: white; border: none; margin-top: 20px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Travel plan for tourist visa applicants</h2>
+    <p>Please list all Schengen countries that you will visit in chronological order.</p>
+
+    <div class="header-box">
+        <strong>1st Country:</strong> <input type="text" placeholder="Country Name">
+        <br>Arrival: <input type="date"> | Departure: <input type="date">
+        <table>
+            <tr><th>Hotel Name</th><th>Address</th><th>Phone</th><th>Nights</th></tr>
+            <tr><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td><td><input type="number"></td></tr>
+            <tr><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td><td><input type="number"></td></tr>
+        </table>
+    </div>
+
+    <div class="header-box">
+        <strong>2nd Country:</strong> <input type="text" placeholder="Country Name">
+        <br>Arrival: <input type="date"> | Departure: <input type="date">
+        <table>
+            <tr><th>Hotel Name</th><th>Address</th><th>Phone</th><th>Nights</th></tr>
+            <tr><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td><td><input type="number"></td></tr>
+            <tr><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td><td><input type="number"></td></tr>
+        </table>
+    </div>
+
+    <button onclick="alert('Form Saved Successfully!')">Submit Travel Plan</button>
+</div>
+
+</body>
+</html>
